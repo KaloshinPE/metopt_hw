@@ -87,7 +87,7 @@ def make_step(Xo, w, grad_Xo, grad_w):
         else: break
 
     while True:
-        if(t2-t1 <= min_step):
+        if t2-t1 <= min_step/5:
             break
         else:
             t = (t1 + t2)/2.0
@@ -98,12 +98,10 @@ def make_step(Xo, w, grad_Xo, grad_w):
             else:
                 t2 = t
                 Q2 = Q_mid
-    if t1*np.sqrt(np.linalg.norm(grad_Xo)**2 + np.linalg.norm(grad_w)**2) < acc:
+    if t1*np.sqrt(np.linalg.norm(grad_Xo)**2 + np.linalg.norm(grad_w)**2)/5 < acc:
         return Xo, w
     else:
         return Xo - t1*grad_Xo, w - t1*grad_w
-
-
 
 
 def draw_line(Xo, w, color):
@@ -113,32 +111,33 @@ def draw_line(Xo, w, color):
     X_right = second_average_x + scale*second_dispersion_x
     Y_top = first_average_y + scale*first_dispersion_y
     Y_bottom = second_average_y - scale*second_dispersion_y
-    if(w[0] != 0 and w[1] != 0):
-        direction = [np.abs(w[1]/w[0]), 1.0]
-        if w[1]/w[0] < 0:
-            f = X_left
-            X_left = X_right
-            X_right = f
-        if(np.abs(X_right - Xo[0])/direction[0] > (Y_top - Xo[1])/direction[1]):
-            X_finish = Xo[0] + (Y_top - Xo[1])/direction[1]*direction[0]
-        else: X_finish = X_right
-
-        if (np.abs(Xo[0]-X_left) / direction[0] > (Xo[1]-Y_bottom) / direction[1]):
-            X_start = Xo[0] - (Xo[1]-Y_bottom) / direction[1] * direction[0]
-        else:
-            X_start = X_left
-
-    elif w[0] == 0:
-        X_start = X_left
-        X_finish = X_right
-    elif w[1] == 0:
+    if(w[1] != 0):
+        direction = [1.0, -1*w[0]/w[1]]
+    else: direction = [0, 1]
+    if(direction[0] == 0):
         X_start = Xo[0]
         X_finish = Xo[0]
+    elif (direction[1] == 0):
+        X_start = X_left
+        X_finish = X_right
+    else:
+        if direction[1] < 0:
+            f = Y_top
+            Y_top = Y_bottom
+            Y_bottom = f
+            direction[1] = -1*direction[1]
+        if np.abs(Y_top - Xo[1])/direction[1] < (X_right - Xo[0]):
+            X_finish = Xo[0] + np.abs(Y_top - Xo[1])/direction[1]
+        else: X_finish = X_right
+        if np.abs(Y_bottom - Xo[1])/direction[1] > (Xo[0] - X_left):
+            X_start = Xo[0] - np.abs(Y_bottom - Xo[1])/direction[1]
+        else: X_start = X_left
 
     X = np.array([X_start, X_finish])
-    if(w[1] != 0):
+    if (w[1] != 0):
         Y = (np.dot(Xo, w) - X * w[0]) / w[1]
-    else: Y = np.array([Y_bottom, Y_top])
+    else:
+        Y = np.array([Y_bottom, Y_top])
     lines = plt.plot(X, Y)
     plt.setp(lines, color=color, linewidth=3.0)
 
@@ -155,8 +154,8 @@ draw_line(Xo, w, 'g')
 while(True):
     grad_Xo, grad_w = grad_Q(w, Xo)
     X1, w1 = make_step(Xo, w, grad_Xo, grad_w)
-    print grad_Xo, grad_w
-    if np.linalg.norm(X1-Xo)+ np.linalg.norm(w1 - w) <= acc:
+    print grad_Xo, grad_w, np.sqrt(np.linalg.norm(X1-Xo)**2+ np.linalg.norm(w1 - w)**2)
+    if np.sqrt(np.linalg.norm(X1-Xo)**2+ np.linalg.norm(w1 - w)**2) <= acc:
         break
     else:
         Xo, w = X1, w1
