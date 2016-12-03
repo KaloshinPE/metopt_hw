@@ -61,26 +61,56 @@ def grad_Q(w, Xo):
     return grad_Xo, grad_w
 
 
+def draw_line(Xo, w, color):
+    # drawing dividing line by start point and normal vector
+    scale = 3
+    X_left = first_average_x - scale*first_dispersion_x
+    X_right = second_average_x + scale*second_dispersion_x
+    Y_top = first_average_y + scale*first_dispersion_y
+    Y_bottom = second_average_y - scale*second_dispersion_y
+    if(w[0] != 0 and w[1] != 0):
+        direction = [np.abs(w[1]/w[0]), 1.0]
+
+        if((X_right - Xo[0])/direction[0] > (Y_top - Xo[1])/direction[1]):
+            X_finish = Xo[0] + (Y_top - Xo[1])/direction[1]*direction[0]
+        else: X_finish = X_right
+
+        if ((Xo[0]-X_left) / direction[0] > (Xo[1]-Y_bottom) / direction[1]):
+            X_start = Xo[0] - (Xo[1]-Y_bottom) / direction[1] * direction[0]
+        else:
+            X_start = X_left
+
+    elif w[0] == 0:
+        X_start = X_left
+        X_finish = X_right
+    elif w[1] == 0:
+        X_start = X_left
+        X_finish = X_right
+
+    X = np.array([X_start, X_finish])
+    if(w[1] != 0):
+        Y = (np.dot(Xo, w) - X * w[0]) / w[1]
+    else: Y = np.array([Y_bottom, Y_top])
+    lines = plt.plot(X, Y)
+    plt.setp(lines, color=color, linewidth=3.0)
+
+
+
 # initialisation start hyperplane
 # Xo - point in the hyperplane, W - normal vector to hyperplane
-Xo = np.array([(first_average_x + second_average_x)/2.0, (first_average_y + second_average_y)/2.0])
-w =  np.array([(second_average_x - first_average_x), (second_average_y - first_average_y)])
-
-# plotting start hyperplane
-X = np.linspace(first_average_x - 0.5*first_dispersion_x, second_average_x + 0.5*second_dispersion_x, 2)
-Y = (np.dot(Xo, w) - X*w[0])/float(w[1])
-lines = plt.plot(X, Y)
-plt.setp(lines, color='g', linewidth=3.0)
+# Xo = np.array([(first_average_x + second_average_x)/2.0, (first_average_y + second_average_y)/2.0])
+# w =  np.array([(second_average_x - first_average_x), (second_average_y - first_average_y)])
+Xo = np.array([3.0, 5.0])
+w = np.array([10.0, 0.0])
+draw_line(Xo, w, 'g')
 
 # gradient decent
-for i in range(100):
+for i in range(2000):
     delta_Xo, delta_w = grad_Q(w, Xo)
-    Xo += delta_Xo
-    w += delta_w
+    Xo -= delta_Xo/np.linalg.norm(delta_Xo)
+    w -= delta_w/np.linalg.norm(delta_w)
 
 # plotting final hyperplane
-Y = (np.dot(Xo, w) - X*w[0])/float(w[1])
-lines = plt.plot(X, Y)
-plt.setp(lines, color='black', linewidth=3.0)
+draw_line(Xo, w, 'm')
 
 plt.show()
