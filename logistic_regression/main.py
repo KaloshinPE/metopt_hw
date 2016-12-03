@@ -23,12 +23,15 @@ random.seed()
 for i in range(Number_of_points):
     point = list()
     point.append(random.randrange(-1, 2, 2))
+    point.append((random.random()-0.5)*20)
+    point.append((random.random() - 0.5) * 20)
+    '''
     if point[0] == 1:
         point.append(random.gauss(first_average_x, first_dispersion_x))
         point.append(random.gauss(first_average_y, first_dispersion_y))
     else:
         point.append(random.gauss(second_average_x, second_dispersion_x))
-        point.append(random.gauss(second_average_y, second_dispersion_y))
+        point.append(random.gauss(second_average_y, second_dispersion_y)) '''
     points.append(point)
 
 x = [points[i][1] for i in range(len(points)) if points[i][0] == -1]
