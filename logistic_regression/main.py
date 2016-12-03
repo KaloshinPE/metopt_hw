@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 import random
 
 Number_of_points = 1000
-acc = 0.001 # accurasy
+acc = 0.005 # accurasy
 
 
 first_average_x = -10.0
@@ -38,9 +38,13 @@ x = [points[i][1] for i in range(len(points)) if points[i][0] == -1]
 y = [points[i][2] for i in range(len(points)) if points[i][0] == -1]
 plt.plot(x, y, 'bo')
 
+def norm(x):
+    # calculates euclidean norm of vector
+    return np.sqrt(reduce(lambda a, b: a**2 + b**2, x))
+
 
 def M(X, w, Xo):
-    # calculating yi*<xi,w>
+    # calculates yi*<xi,w>
     return X[0]*(np.dot(np.array(X[1:]), w) - np.dot(w, Xo))
 
 
@@ -74,7 +78,7 @@ def grad_Q(w, Xo):
 def make_step(Xo, w, grad_Xo, grad_w):
     # calculates step via optimizing one-dimensional function F(t) = Q(Xo|w + t*gradQ(Xo, w))
     # returns new Xo, w
-    min_step = acc/np.sqrt(np.linalg.norm(grad_Xo)**2 + np.linalg.norm(grad_w)**2)
+    min_step = acc/np.sqrt(norm(grad_Xo)**2 + norm(grad_w)**2)
     t1 = 0
     t2 = min_step
     Q1, Q2 = Q(w, Xo), 0
@@ -84,10 +88,10 @@ def make_step(Xo, w, grad_Xo, grad_w):
             Q1 = Q2
             t1 = t2
             t2 *= 2
-        else: break
-
+        else:
+             break
     while True:
-        if t2-t1 <= min_step/5:
+        if t2-t1 <= min_step:
             break
         else:
             t = (t1 + t2)/2.0
@@ -98,7 +102,7 @@ def make_step(Xo, w, grad_Xo, grad_w):
             else:
                 t2 = t
                 Q2 = Q_mid
-    if t1*np.sqrt(np.linalg.norm(grad_Xo)**2 + np.linalg.norm(grad_w)**2)/5 < acc:
+    if t1*np.sqrt(norm(grad_Xo)**2 + norm(grad_w)**2) < acc:
         return Xo, w
     else:
         return Xo - t1*grad_Xo, w - t1*grad_w
@@ -154,8 +158,8 @@ draw_line(Xo, w, 'g')
 while(True):
     grad_Xo, grad_w = grad_Q(w, Xo)
     X1, w1 = make_step(Xo, w, grad_Xo, grad_w)
-    print grad_Xo, grad_w, np.sqrt(np.linalg.norm(X1-Xo)**2+ np.linalg.norm(w1 - w)**2)
-    if np.sqrt(np.linalg.norm(X1-Xo)**2+ np.linalg.norm(w1 - w)**2) <= acc:
+    print Xo, w, np.sqrt(norm(X1-Xo)**2+ norm(w1 - w)**2)
+    if np.sqrt(norm(X1-Xo)**2+ norm(w1 - w)**2) <= acc:
         break
     else:
         Xo, w = X1, w1
