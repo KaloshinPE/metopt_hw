@@ -6,19 +6,20 @@ Number_of_points = 1000
 acc = 0.005 # accurasy
 
 
-first_average_x = -10.0
-first_dispersion_x = 7.0
+first_average_x = 0.0
+first_dispersion_x = 2.0
 first_average_y = 10.0
-first_dispersion_y = 7.0
+first_dispersion_y = 5.0
 
-second_average_x = 10.0
-second_dispersion_x = 8.0
+second_average_x = 0.0
+second_dispersion_x = 2.0
 second_average_y = -10.0
-second_dispersion_y = 8.0
+second_dispersion_y = 2.0
 
 # generating data randomly
 points = []
 random.seed()
+
 for i in range(Number_of_points):
     point = list()
     point.append(random.randrange(-1, 2, 2))
@@ -30,13 +31,13 @@ for i in range(Number_of_points):
         point.append(random.gauss(second_average_y, second_dispersion_y))
     points.append(point)
 
-x = [points[i][1] for i in range(len(points)) if points[i][0] == 1]
-y = [points[i][2] for i in range(len(points)) if points[i][0] == 1]
-plt.plot(x, y, 'ro')
-
 x = [points[i][1] for i in range(len(points)) if points[i][0] == -1]
 y = [points[i][2] for i in range(len(points)) if points[i][0] == -1]
 plt.plot(x, y, 'bo')
+
+x = [points[i][1] for i in range(len(points)) if points[i][0] == 1]
+y = [points[i][2] for i in range(len(points)) if points[i][0] == 1]
+plt.plot(x, y, 'ro')
 
 def norm(x):
     # calculates euclidean norm of vector
@@ -110,38 +111,28 @@ def make_step(Xo, w, grad_Xo, grad_w):
 
 def draw_line(Xo, w, color):
     # drawing dividing line by start point and normal vector
-    scale = 3
-    X_left = first_average_x - scale*first_dispersion_x
-    X_right = second_average_x + scale*second_dispersion_x
-    Y_top = first_average_y + scale*first_dispersion_y
-    Y_bottom = second_average_y - scale*second_dispersion_y
-    if(w[1] != 0):
-        direction = [1.0, -1*w[0]/w[1]]
-    else: direction = [0, 1]
-    if(direction[0] == 0):
-        X_start = Xo[0]
-        X_finish = Xo[0]
-    elif (direction[1] == 0):
-        X_start = X_left
-        X_finish = X_right
-    else:
-        if direction[1] < 0:
-            f = Y_top
-            Y_top = Y_bottom
-            Y_bottom = f
-            direction[1] = -1*direction[1]
-        if np.abs(Y_top - Xo[1])/direction[1] < (X_right - Xo[0]):
-            X_finish = Xo[0] + np.abs(Y_top - Xo[1])/direction[1]
-        else: X_finish = X_right
-        if np.abs(Y_bottom - Xo[1])/direction[1] > (Xo[0] - X_left):
-            X_start = Xo[0] - np.abs(Y_bottom - Xo[1])/direction[1]
-        else: X_start = X_left
 
-    X = np.array([X_start, X_finish])
-    if (w[1] != 0):
-        Y = (np.dot(Xo, w) - X * w[0]) / w[1]
+    scale1 = 3
+    X_left = first_average_x - scale1*first_dispersion_x
+    X_right = second_average_x + scale1*second_dispersion_x
+    Y_top = first_average_y + scale1*first_dispersion_y
+    Y_bottom = second_average_y - scale1*second_dispersion_y
+
+    if w[1] == 0:
+        direction = np.array([0, 1])
     else:
-        Y = np.array([Y_bottom, Y_top])
+        direction = np.array([1, -1*w[0]/w[1]])
+        direction = direction/norm(direction)
+    if Xo[0] < X_left and direction[0] != 0:
+        Xo += direction*((X_left+X_right)/2 - Xo[0])/direction[0]
+    if Xo[0] > X_right and direction[0] != 0:
+        Xo -= direction*(Xo[0] - (X_left+X_right)/2)/direction[0]
+
+    scale = 15
+    point1 = Xo + scale*direction
+    point2 = Xo - scale * direction
+    X = np.array([point1[0], point2[0]])
+    Y = np.array([point1[1], point2[1]])
     lines = plt.plot(X, Y)
     plt.setp(lines, color=color, linewidth=3.0)
 
