@@ -36,19 +36,38 @@ y = [points[i][2] for i in range(len(points)) if points[i][0] == -1]
 plt.plot(x, y, 'bo')
 
 
-def M(X, w):
+def M(X, w, Xo):
     # calculating yi*<xi,w>
-    return X[0]*(X[1]*w[1] + X[2]*w[2] - w[0])
+    return X[0]*(np.dot(np.array(X[1:]), w) - np.dot(w, Xo))
+
+
+def grad_M(X, w, Xo):
+    # calculates gradient fo M
+    # returns two vectors - dMi/dXo and dMi/dw in X
+    return -1*X[0]*w, np.array(X[0]*(np.array(X[1:]) - Xo))
+
+
+def grad_Q(w, Xo):
+    # calculates gradient for residual function
+    # returns two vectors - dMi/dXo and dMi/dw in X
+    grad_Xo = np.zeros(2)
+    grad_w = np.zeros(2)
+    for X in points:
+        exp_buf = np.exp(-1*M(X, w, Xo))
+        grad_coeff = -1*exp_buf/(1 + exp_buf)
+        delta_grad_Xo, delat_grad_w = grad_coeff*grad_M(X, w, Xo)
+        grad_Xo +=  delta_grad_Xo
+        grad_w += delat_grad_w
+    return grad_Xo, grad_w
+        
 
 # start hyperplane
 
-# w is 2*N dimensional vector, consisted from two vectors - Xo (point in the hyperplane)
-# and W (normal vector to hyperplane)
-w = [(first_average_x + second_average_x)/2.0,
-     (first_average_y + second_average_y)/2.0 ,
-     (second_average_x - first_average_x), (second_average_y - first_average_y)]
+# Xo - point in the hyperplane, W - normal vector to hyperplane
+Xo = np.array([(first_average_x + second_average_x)/2.0, (first_average_y + second_average_y)/2.0])
+w =  np.array([(second_average_x - first_average_x), (second_average_y - first_average_y)])
 X = np.linspace(first_average_x - 0.5*first_dispersion_x, second_average_x + 0.5*second_dispersion_x, 2)
-Y = (w[0]*w[2] + w[1]*w[3] - X*w[2])/float(w[3])
+Y = (np.dot(Xo, w) - X*w[0])/float(w[1])
 lines = plt.plot(X, Y)
 plt.setp(lines, color='g', linewidth=3.0)
 
