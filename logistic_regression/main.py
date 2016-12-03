@@ -3,7 +3,8 @@ from matplotlib import pyplot as plt
 import random
 
 Number_of_points = 1000
-points = []
+acc = 0.01 # accurasy
+
 
 first_average_x = -10.0
 first_dispersion_x = 7.0
@@ -15,6 +16,8 @@ second_dispersion_x = 8.0
 second_average_y = 10.0
 second_dispersion_y = 8.0
 
+# generating data randomly
+points = []
 random.seed()
 for i in range(Number_of_points):
     point = list()
@@ -47,6 +50,13 @@ def grad_M(X, w, Xo):
     return -1*X[0]*w, np.array(X[0]*(np.array(X[1:]) - Xo))
 
 
+def Q(w, Xo):
+    # calculates value for residual function
+    Q_value = 0.0
+    for X in points:
+        Q_value += np.log(1 + np.exp(-1*M(X, w, Xo)))
+    return Q_value
+
 def grad_Q(w, Xo):
     # calculates gradient for residual function
     # returns two vectors - dMi/dXo and dMi/dw in X
@@ -59,6 +69,40 @@ def grad_Q(w, Xo):
         grad_Xo +=  grad_coeff*delta_grad_Xo
         grad_w += grad_coeff*delat_grad_w
     return grad_Xo, grad_w
+
+
+def make_step(Xo, w, grad_Xo, grad_w):
+    # calculates step via optimizing one-dimensional function F(t) = Q(Xo|w + t*gradQ(Xo, w))
+    # returns new Xo, w
+    min_step = acc/(np.linalg.norm(grad_Xo) + np.linalg.norm(grad_w))
+    t1 = 0
+    t2 = min_step
+    Q1, Q2 = Q(w, Xo), 0
+    while(True):
+        Q2 = Q(w - t2*grad_w, Xo - t2*grad_Xo)
+        if (Q2 < Q1):
+            Q1 = Q2
+            t1 = t2
+            t2 *= 2
+        else: break
+    while(True):
+        if(t2-t1 <= min_step):
+            break
+        else:
+            t = (t1 + t2)/2.0
+            Q_mid = Q(w - t*grad_w, Xo - t*grad_Xo)
+            if(Q_mid < Q1):
+                t1 = t
+                Q1 = Q_mid
+            else:
+                t2 = t
+                Q2 = Q_mid
+    if t1 < acc:
+        return np.zeros(2), np.zeros(2)
+    else:
+        return Xo - t1*grad_Xo, w - t1*grad_w
+
+
 
 
 def draw_line(Xo, w, color):
@@ -95,8 +139,7 @@ def draw_line(Xo, w, color):
     plt.setp(lines, color=color, linewidth=3.0)
 
 
-
-# initialisation start hyperplane
+# initialisation of start hyperplane
 # Xo - point in the hyperplane, W - normal vector to hyperplane
 # Xo = np.array([(first_average_x + second_average_x)/2.0, (first_average_y + second_average_y)/2.0])
 # w =  np.array([(second_average_x - first_average_x), (second_average_y - first_average_y)])
@@ -105,10 +148,14 @@ w = np.array([10.0, 0.0])
 draw_line(Xo, w, 'g')
 
 # gradient decent
-for i in range(2000):
-    delta_Xo, delta_w = grad_Q(w, Xo)
-    Xo -= delta_Xo/np.linalg.norm(delta_Xo)
-    w -= delta_w/np.linalg.norm(delta_w)
+while(True):
+    print "cock"
+    grad_Xo, grad_w = grad_Q(w, Xo)
+    X1, w1 = make_step(Xo, w, grad_Xo, grad_w)
+    if np.linalg.norm(X1-Xo)+ np.linalg.norm(w1 - w) <= acc:
+        break
+    else:
+        Xo, w = X1, w1
 
 # plotting final hyperplane
 draw_line(Xo, w, 'm')
