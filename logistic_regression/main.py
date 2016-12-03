@@ -5,15 +5,15 @@ import random
 Number_of_points = 1000
 points = []
 
-first_average_x = -10
-first_dispersion_x = 7
-first_average_y = -10
-first_dispersion_y = 7
+first_average_x = -10.0
+first_dispersion_x = 7.0
+first_average_y = -10.0
+first_dispersion_y = 7.0
 
-second_average_x = 10
-second_dispersion_x = 8
-second_average_y = 10
-second_dispersion_y = 8
+second_average_x = 10.0
+second_dispersion_x = 8.0
+second_average_y = 10.0
+second_dispersion_y = 8.0
 
 random.seed()
 for i in range(Number_of_points):
@@ -55,20 +55,32 @@ def grad_Q(w, Xo):
     for X in points:
         exp_buf = np.exp(-1*M(X, w, Xo))
         grad_coeff = -1*exp_buf/(1 + exp_buf)
-        delta_grad_Xo, delat_grad_w = grad_coeff*grad_M(X, w, Xo)
-        grad_Xo +=  delta_grad_Xo
-        grad_w += delat_grad_w
+        delta_grad_Xo, delat_grad_w = grad_M(X, w, Xo)
+        grad_Xo +=  grad_coeff*delta_grad_Xo
+        grad_w += grad_coeff*delat_grad_w
     return grad_Xo, grad_w
-        
 
-# start hyperplane
 
+# initialisation start hyperplane
 # Xo - point in the hyperplane, W - normal vector to hyperplane
 Xo = np.array([(first_average_x + second_average_x)/2.0, (first_average_y + second_average_y)/2.0])
 w =  np.array([(second_average_x - first_average_x), (second_average_y - first_average_y)])
+
+# plotting start hyperplane
 X = np.linspace(first_average_x - 0.5*first_dispersion_x, second_average_x + 0.5*second_dispersion_x, 2)
 Y = (np.dot(Xo, w) - X*w[0])/float(w[1])
 lines = plt.plot(X, Y)
 plt.setp(lines, color='g', linewidth=3.0)
+
+# gradient decent
+for i in range(100):
+    delta_Xo, delta_w = grad_Q(w, Xo)
+    Xo += delta_Xo
+    w += delta_w
+
+# plotting final hyperplane
+Y = (np.dot(Xo, w) - X*w[0])/float(w[1])
+lines = plt.plot(X, Y)
+plt.setp(lines, color='black', linewidth=3.0)
 
 plt.show()
