@@ -75,8 +75,8 @@ for i in range(int(m)):
     A[2 * i + 1][5] = -1
     A[2 * i + 1][i + 6] = -1
 optimized = linprog(c, A, b)
-print "coeff: " + str([optimized.slack[0] - optimized.slack[1], optimized.slack[2] - optimized.slack[3], optimized.slack[4] - optimized.slack[5]])
 a_est1 = np.array([optimized.slack[0] - optimized.slack[1], optimized.slack[2] - optimized.slack[3], optimized.slack[4] - optimized.slack[5]])
+print "coeff: " + str(a_est1)
 y_est1 = values(a_est1)
 
 plt.plot(t, y_original, 'r')
