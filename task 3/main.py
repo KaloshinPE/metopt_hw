@@ -54,7 +54,9 @@ A = np.zeros([2*int(m), int(m) + 6])
 c = np.ones(int(m) + 6)
 b = np.zeros(2*int(m))
 for i in range(6):
-    c[i] = 0
+    c[i] = 0.0
+
+
 for i in range(int(m)):
     b[2 * i] = -1*y_random[i]
     b[2 * i + 1] = y_random[i]
@@ -63,19 +65,21 @@ for i in range(int(m)):
     A[2 * i][1] = np.sin(t[i])
     A[2 * i][2] = -1 * t[i]
     A[2 * i][3] = t[i]
-    A[2 * i][4] = -1
-    A[2 * i][5] = 1
-    A[2 * i][i + 6] = -1
+    A[2 * i][4] = -1.0
+    A[2 * i][5] = 1.0
+    A[2 * i][i + 6] = -1.0
 
     A[2 * i + 1][0] = np.sin(t[i])
     A[2 * i + 1][1] = -1 * np.sin(t[i])
     A[2 * i + 1][2] = t[i]
     A[2 * i + 1][3] = -1 * t[i]
-    A[2 * i + 1][4] = 1
-    A[2 * i + 1][5] = -1
-    A[2 * i + 1][i + 6] = -1
+    A[2 * i + 1][4] = 1.0
+    A[2 * i + 1][5] = -1.0
+    A[2 * i + 1][i + 6] = -1.0
+
 optimized = linprog(c, A, b)
-a_est1 = np.array([optimized.slack[0] - optimized.slack[1], optimized.slack[2] - optimized.slack[3], optimized.slack[4] - optimized.slack[5]])
+print optimized
+a_est1 = np.array([optimized.x[0] - optimized.x[1], optimized.x[2] - optimized.x[3], optimized.x[4] - optimized.x[5]])
 print "coeff: " + str(a_est1)
 y_est1 = values(a_est1)
 
