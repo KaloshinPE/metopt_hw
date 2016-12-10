@@ -3,38 +3,49 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import pylab as pb
-import math
 
 accuracy = 0.01
-Center1 = np.array([1, 4, 3])
-Center2 = np.array([4, 3, 5])
-Dispersion1 = 3
-Dispersion2 = 1
-Number1 = 50
-Number2 = 50
+Center1 = np.array([-4, 4, 4])
+Center2 = np.array([4, -3, -4])
+Dispersion1 = 6
+Dispersion2 = 7
+Number1 = 300
+Number2 = 300
 
 
 def gen_normal_data():
-    class1 = np.array([np.array(
-        [-1, np.random.normal(Center1[0], Dispersion1), np.random.normal(Center1[1], Dispersion1),
-         np.random.normal(Center1[2], Dispersion1), -1]) for i in range(Number1)])
-    class2 = np.array([np.array(
-        [-1, np.random.normal(Center2[0], Dispersion2), np.random.normal(Center2[1], Dispersion2),
-         np.random.normal(Center2[2], Dispersion2), 1]) for i in range(Number2)])
-    return class1, class2
+    class1, class2 = list(), list()
+    for i in range(Number1):
+        buffer = [-1,]
+        for j in range(len(Center1)):
+            buffer.append(np.random.normal(Center1[j], Dispersion1))
+        buffer.append(-1)
+        class1.append(buffer)
+    for i in range(Number2):
+        buffer = [-1,]
+        for j in range(len(Center2)):
+            buffer.append(np.random.normal(Center2[j], Dispersion2))
+        buffer.append(1)
+        class2.append(buffer)
+    return np.array(class1), np.array(class2)
 
 
 def gen_uniform_data():
     Center = (Center1 + Center2)/2
-    class1 = np.array([np.array(
-        [-1, Center[0] + (0.5 - np.random.sample()) * 3 * Dispersion1,
-         Center[1] + (0.5 - np.random.sample()) * 3 * Dispersion1,
-         Center[2] + (0.5 - np.random.sample()) * 3 * Dispersion1, -1]) for i in range(Number1)])
-    class2 = np.array([np.array(
-        [-1, Center[0] + (0.5 - np.random.sample()) * 3 * Dispersion2,
-         Center[1] + (0.5 - np.random.sample()) * 3 * Dispersion2,
-         Center[2] + (0.5 - np.random.sample()) * 3 * Dispersion2, 1]) for i in range(Number2)])
-    return class1, class2
+    class1, class2 = list(), list()
+    for i in range(Number1):
+        buffer = [-1,]
+        for j in range(len(Center)):
+            buffer.append(Center[j] + (0.5 - np.random.sample()) * 3 * Dispersion1)
+        buffer.append(-1)
+        class1.append(buffer)
+    for i in range(Number2):
+        buffer = [-1,]
+        for j in range(len(Center)):
+            buffer.append(Center[j] + (0.5 - np.random.sample()) * 3 * Dispersion2)
+        buffer.append(1)
+        class2.append(buffer)
+    return np.array(class1), np.array(class2)
 
 
 def print_data(class1, class2, fig):
@@ -56,7 +67,7 @@ def print_data(class1, class2, fig):
         return 0
 
 
-def draw(weights, color, axes):
+def draw_plane(weights, color, axes):
     def line(a, b, x):
         return a*x+b
 
@@ -78,14 +89,13 @@ def draw(weights, color, axes):
 
 
 def gradient_descent():
-
     def Q(w):
         sum = 0
         points = np.hsplit(data, (0, data.shape[1] - 1))[1]
         class_values = np.hsplit(data, (0, data.shape[1] - 1))[2]
         for i in range(data.shape[0]):
             buf = -1 * class_values[i][0] * np.dot(w, points[i])
-            sum += np.log(1 + math.exp(buf))
+            sum += np.log(1 + np.exp(buf))
         return sum
 
     def gradQ():
@@ -104,7 +114,7 @@ def gradient_descent():
         eps = 0.1
         step1 = step
         while True:
-            if Q(w - grad * step1) > Q((w) - eps*step*math.sqrt(np.dot(grad,grad))):
+            if Q(w - grad * step1) > Q((w) - eps*step*np.sqrt(np.dot(grad,grad))):
                 step1 /= 2
             else:
                 break
@@ -113,25 +123,29 @@ def gradient_descent():
     w = np.zeros(len(Center1) + 1)
     step = 0.01
     grad = gradQ()
+    itterations = 0
     while True:
+        itterations += 1
         grad = gradQ()
         step = choose_step(step)
         w = w - grad * step
         if np.linalg.norm(grad*step) < accuracy:
             break
-    return w
+    return w, itterations
+
 
 
 fig = pb.figure()
-#class1, class2 = gen_uniform_data()
-class1, class2 = gen_normal_data()
+class1, class2 = gen_uniform_data()
+#class1, class2 = gen_normal_data()
 axes = print_data(class1, class2, fig)
 data = np.vstack((class1, class2))
+print data
 
-weights = gradient_descent()
-print weights
+weights, itterations = gradient_descent()
+print weights, itterations
 
-draw(weights, 'black', axes)
+draw_plane(weights, 'black', axes)
 pb.show()
 
 
