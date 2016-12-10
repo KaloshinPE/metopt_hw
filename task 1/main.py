@@ -5,25 +5,13 @@ from mpl_toolkits.mplot3d import Axes3D
 import pylab as pb
 import math
 
-
+accuracy = 0.01
 Center1 = np.array([1, 4, 3])
 Center2 = np.array([4, 3, 5])
-Dispersion1 = 1
+Dispersion1 = 3
 Dispersion2 = 1
 Number1 = 50
 Number2 = 50
-
-
-
-def Q(w):
-    data = np.vstack((class1, class2))
-    sum = 0
-    points = np.hsplit(data, (0, data.shape[1] - 1))[1]
-    class_values = np.hsplit(data, (0, data.shape[1] - 1))[2]
-    for i in range(data.shape[0]):
-        buf = -1*class_values[i][0]*np.dot(w, points[i])
-        sum += np.log(1 + math.exp(buf))
-    return sum
 
 
 def gen_normal_data():
@@ -89,47 +77,58 @@ def draw(weights, color, axes):
         pb.ylim([-10, 10])
 
 
-def gradient_descent(function):
-    initial = np.zeros(len(Center1)+1)
+def gradient_descent():
 
-    def find_grad():
-        h = 0.0001
-        x = np.zeros(len(initial))
-        x[:] = initial
+    def Q(w):
+        sum = 0
+        points = np.hsplit(data, (0, data.shape[1] - 1))[1]
+        class_values = np.hsplit(data, (0, data.shape[1] - 1))[2]
+        for i in range(data.shape[0]):
+            buf = -1 * class_values[i][0] * np.dot(w, points[i])
+            sum += np.log(1 + math.exp(buf))
+        return sum
 
-        for i in range(initial.size):
-            x[i] = initial[i] + h
-            grad[i] = (function(x) - function(initial))/h
-            x[i] = initial[i]
+    def gradQ():
+        grad = np.zeros(len(w))
+        points = np.hsplit(data, (0, data.shape[1] - 1))[1]
+        class_values = np.hsplit(data, (0, data.shape[1] - 1))[2]
+        for i in range(len(w)):
+            M = 0
+            for j in range(data.shape[0]):
+                buf = -1 * class_values[j][0] * np.dot(w, points[j])
+                M += np.exp(buf) / (1 + np.exp(buf)) * -1 * class_values[j][0] * points[j][i]
+            grad[i] = M
+        return grad
 
     def choose_step(step):
         eps = 0.1
         step1 = step
         while True:
-            if function(initial - grad * step1) > function((initial) - eps*step*math.sqrt(np.dot(grad,grad))):
+            if Q(w - grad * step1) > Q((w) - eps*step*math.sqrt(np.dot(grad,grad))):
                 step1 /= 2
             else:
                 break
         return step1
 
-
+    w = np.zeros(len(Center1) + 1)
     step = 0.01
-    grad = np.zeros(len(initial))
+    grad = gradQ()
     while True:
-        find_grad()
+        grad = gradQ()
         step = choose_step(step)
-        initial = initial - grad * step
-        if np.all(grad*step <= 0.001) and np.all(grad*step >= -0.001):
+        w = w - grad * step
+        if np.linalg.norm(grad*step) < accuracy:
             break
-    return initial
+    return w
 
 
 fig = pb.figure()
 #class1, class2 = gen_uniform_data()
 class1, class2 = gen_normal_data()
 axes = print_data(class1, class2, fig)
+data = np.vstack((class1, class2))
 
-weights = gradient_descent(Q)
+weights = gradient_descent()
 print weights
 
 draw(weights, 'black', axes)
