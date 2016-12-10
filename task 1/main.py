@@ -14,25 +14,16 @@ Number1 = 50
 Number2 = 50
 
 
-class LogisticRegression:
-    def __init__(self):
-        self.number = 0
 
-    def fit(self, train_data):
-        self.row_number = train_data.shape[0]
-        self.column_number = train_data.shape[1]
-        self.train = np.hsplit(train_data, (0, self.column_number-1))[1]
-        self.target = np.hsplit(train_data, (0, self.column_number-1))[2]
-
-    def Q(self, w):
-            s = 0
-            for i in range(self.row_number):
-                power = -1*self.target[i][0]*np.dot(w, self.train[i][:])
-                s += math.log((1+math.exp(power)), math.e)
-            return s
-
-    def find_weights(self):
-        return gradient_descent(self.Q,)
+def Q(w):
+    data = np.vstack((class1, class2))
+    sum = 0
+    points = np.hsplit(data, (0, data.shape[1] - 1))[1]
+    class_values = np.hsplit(data, (0, data.shape[1] - 1))[2]
+    for i in range(data.shape[0]):
+        buf = -1*class_values[i][0]*np.dot(w, points[i])
+        sum += np.log(1 + math.exp(buf))
+    return sum
 
 
 def gen_normal_data():
@@ -102,7 +93,8 @@ def gradient_descent(function):
     initial = np.zeros(len(Center1)+1)
 
     def find_grad():
-        x = np.zeros(number)
+        h = 0.0001
+        x = np.zeros(len(initial))
         x[:] = initial
 
         for i in range(initial.size):
@@ -111,37 +103,33 @@ def gradient_descent(function):
             x[i] = initial[i]
 
     def choose_step(step):
-        status2 = 1
+        eps = 0.1
         step1 = step
-        while status2==1:
+        while True:
             if function(initial - grad * step1) > function((initial) - eps*step*math.sqrt(np.dot(grad,grad))):
-                step1 *= delta
+                step1 /= 2
             else:
-                status2 = 0
+                break
         return step1
-    eps = 0.1
-    delta = 0.5
-    h = 0.0001
+
+
     step = 0.01
-    number = len(initial)
-    grad = np.zeros(number)
-    status = 1
-    while status != 0:
+    grad = np.zeros(len(initial))
+    while True:
         find_grad()
         step = choose_step(step)
         initial = initial - grad * step
         if np.all(grad*step <= 0.001) and np.all(grad*step >= -0.001):
-            status = 0
+            break
     return initial
 
 
 fig = pb.figure()
-class1, class2 = gen_uniform_data()
+#class1, class2 = gen_uniform_data()
+class1, class2 = gen_normal_data()
 axes = print_data(class1, class2, fig)
-l_regression = LogisticRegression()
-l_regression.fit(np.vstack((class1, class2)))
 
-weights = l_regression.find_weights()
+weights = gradient_descent(Q)
 print weights
 
 draw(weights, 'black', axes)
