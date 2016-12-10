@@ -19,16 +19,13 @@ def G_value(x, x_s, y, y_s, mu):
 def grad_G(x, x_s, y, y_s, mu):
     r1 = np.dot(A, x) + x_s - b,
     r2 = np.dot(A.transpose(), y) - y_s - c
-    dot1, dot2 = np.dot(r1, np.ones(len(r1))), np.dot(r2, np.ones(len(r2)))
     grad_x, grad_x_s, grad_y, grad_y_s = np.zeros(len(x)), np.zeros(len(x_s)), np.zeros(len(y)), np.zeros(len(y_s))
     for i in range(len(x)):
         grad_x[i] = 2*np.dot(r1, A.transpose()[i]) + 2*(x[i]*y_s[i] - mu)*y_s[i]
-        #grad_y_s[i] = -2*dot2 + 2*(x[i]*y_s[i] - mu)*x[i]
         grad_y_s[i] = -2 * r2[i] + 2 * (x[i] * y_s[i] - mu) * x[i]
     for j in range(len(y)):
         grad_y[j] = 2*np.dot(r2, A[j]) + 2*(x_s[j]*y[j] - mu)*x_s[j]
         grad_x_s[j] = 2 * r1[j] + 2 * (x_s[j] * y[j] - mu) * y[j]
-        #grad_x_s[j] = 2*dot1 + 2*(x_s[j]*y[j] - mu)*y[j]
     return grad_x, grad_x_s, grad_y, grad_y_s
 
 
