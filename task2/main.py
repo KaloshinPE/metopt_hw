@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-A = np.array([[1, 2]])
-b = np.array([2])
+A = np.array([[1, 2], [2, 1]])
+b = np.array([2, 2])
 c = np.array([3, 4])
 m, n = A.shape[0], A.shape[1]
 acc = 10**(-3)
@@ -17,7 +17,7 @@ def G_value(x, x_s, y, y_s, mu):
 
 
 def grad_G(x, x_s, y, y_s, mu):
-    r1 = np.dot(A, x) + x_s - b,
+    r1 = np.dot(A, x) + x_s - b
     r2 = np.dot(A.transpose(), y) - y_s - c
     grad_x, grad_x_s, grad_y, grad_y_s = np.zeros(len(x)), np.zeros(len(x_s)), np.zeros(len(y)), np.zeros(len(y_s))
     for i in range(len(x)):
@@ -60,13 +60,41 @@ def solve_G(mu):
     return x, x_s, y, y_s
 
 
-x, y_s, x_s, y = 2*np.ones(n), np.ones(n), np.ones(m), np.ones(m)
-mu = 5
-for i in range(k_max):
-    x_next, x_s_next, y_next, y_s_next = solve_G(mu)
-    if np.linalg.norm(x - x_next) <= e1 and np.linalg.norm(x_s - x_s_next) <= e2 and np.linalg.norm(y - y_next) <= e3 and np.linalg.norm(y_s - y_s_next) <= e4:
-        break;
-    x, x_s, y, y_s = x_next, x_s_next, y_next, y_s_next
-    mu = mu/2
+def central_path():
+    path_x, path_y = list(), list()
+    x, y_s, x_s, y = 2*np.ones(n), np.ones(n), np.ones(m), np.ones(m)
+    mu = 10
+    for i in range(k_max):
+        x_next, x_s_next, y_next, y_s_next = solve_G(mu)
+        if np.linalg.norm(x - x_next) <= e1 and np.linalg.norm(x_s - x_s_next) <= e2 and np.linalg.norm(y - y_next) <= e3 and np.linalg.norm(y_s - y_s_next) <= e4:
+            break;
+        path_x.append(x[0])
+        path_y.append(x[0])
+        x, x_s, y, y_s = x_next, x_s_next, y_next, y_s_next
+        mu /= 2
+    return x, path_x, path_y
 
-print x, x_s, y, y_s
+
+def draw_line(a, b, color):
+    # plots a line with a[0]x + a[1]y = b
+    points_x = list()
+    points_y = list()
+    if a[1] == 0:
+        points_x = [b / a[0], b / a[0]]
+        points_y = [0, 10]
+    else:
+        points_x = [0, b / a[0]]
+        points_y = [b / a[1], 0]
+    plt.plot(points_x, points_y, color)
+
+
+plt.clf()
+for i in range(A.shape[0]):
+    draw_line(A[i], b[i], 'r')
+x, path_x, path_y = central_path()
+value = np.dot(x, c)
+draw_line(c, value, 'g')
+plt.plot(path_x, path_y, 'mo')
+plt.annotate(str(path_mu[i], xy=(path_x[i], path_y[i]), xytext=(3, 1.5), arrowprops=dict(facecolor='black', shrink=0.05)))
+
+plt.show()
