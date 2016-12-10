@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import pylab as pb
 
-accuracy = 0.01
 Center1 = np.array([-4, 4, 4])
 Center2 = np.array([4, -3, -4])
 Dispersion1 = 6
@@ -112,13 +111,16 @@ def gradient_descent():
 
     def choose_step(step):
         eps = 0.1
-        step1 = step
+        '''step1 = step
+        k = 0
         while True:
-            if Q(w - grad * step1) > Q((w) - eps*step*np.sqrt(np.dot(grad,grad))):
+            k += 1
+            print "step choise " + str(k)
+            if Q(w - grad * step1) > Q((w) - eps*step*np.sqrt(np.dot(grad,grad))) and k < 10:
                 step1 /= 2
             else:
-                break
-        return step1
+                break'''
+        return step
 
     w = np.zeros(len(Center1) + 1)
     step = 0.01
@@ -129,24 +131,24 @@ def gradient_descent():
         grad = gradQ()
         step = choose_step(step)
         w = w - grad * step
+        #print "iteration: " + str(itterations)
         if np.linalg.norm(grad*step) < accuracy:
             break
     return w, itterations
 
 
-
-fig = pb.figure()
-class1, class2 = gen_uniform_data()
-#class1, class2 = gen_normal_data()
-axes = print_data(class1, class2, fig)
-data = np.vstack((class1, class2))
-print data
-
-weights, itterations = gradient_descent()
-print weights, itterations
-
-draw_plane(weights, 'black', axes)
-pb.show()
+accuracy_raw = [1.0/2/i for i in range(1000)[1:]]
 
 
-
+x_values, y_values = list(), list()
+for i in range(len(accuracy_raw)):
+    print i
+    accuracy = accuracy_raw[i]
+    class1, class2 = gen_uniform_data()
+    data = np.vstack((class1, class2))
+    weights, itterations = gradient_descent()
+    x_values.append(np.log(1.0/accuracy_raw[i]))
+    y_values.append(itterations)
+plt.clf()
+plt.plot(x_values, y_values)
+plt.show()
