@@ -27,8 +27,8 @@ def sum_of_array(f, X):
 
 y_original = values(a_original)
 y_random = np.array([element + random.gauss(0, sigma) for element in y_original])
-y_random[0] -= 5
-y_random[-1] += 5
+y_random[0] -= 15
+y_random[-1] += 15
 
 # minimize sum of squares. Do it via differentiation of residual function and searching for static point
 # finally get system of 3 equations, it's solution is our estimation for coefficients
@@ -49,7 +49,7 @@ b = np.array([sum_of_array(lambda i: y_random[i] * np.sin(t[i]), range(int(m))),
 
 a_est2 = np.linalg.solve(A, b)
 y_est2 = values(a_est2)
-plt.plot(t, y_est2, 'm')
+plt.plot(t, y_est2, 'r')
 
 
 # minimize sum of modules using simplex algorithm
@@ -88,7 +88,7 @@ if type(optimized.x) != float:
     a_est1 = np.array([optimized.x[0] - optimized.x[1], optimized.x[2] - optimized.x[3], optimized.x[4] - optimized.x[5]])
     print "coeff: " + str(a_est1)
     y_est1 = values(a_est1)
-    plt.plot(t, y_est1, 'c')
+    plt.plot(t, y_est1, 'yellow')
 
 # minimize maximum modul, using simplex
 A = np.zeros([2*int(m), 7])
@@ -124,9 +124,9 @@ if type(optimized.x) != float:
     a_est3 = np.array([optimized.x[0] - optimized.x[1], optimized.x[2] - optimized.x[3], optimized.x[4] - optimized.x[5]])
     print "coeff: " + str(a_est3)
     y_est3 = values(a_est3)
-    plt.plot(t, y_est3, 'b')
+    plt.plot(t, y_est3, 'purple')
 
 
-plt.plot(t, y_original, 'r')
+#plt.plot(t, y_original, 'r')
 plt.plot(t, y_random, 'g')
 plt.show()
